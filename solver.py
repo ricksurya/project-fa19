@@ -6,7 +6,7 @@ import argparse
 import utils
 
 from student_utils import *
-from tsp.py import *
+from tsp import *
 """
 ======================================================================
   Complete the following function.
@@ -33,7 +33,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     # This is the list of homes as indexes
     homes = []
 
-    for i in range len(list_of_locations):
+    for i in range(len(list_of_locations)):
         locationMap[i] = list_of_locations[i]
         if list_of_locations[i] == starting_car_location:
             startingIndex = i
@@ -325,17 +325,18 @@ def solve_all(input_directory, output_directory, params=[]):
         solve_from_file(input_file, output_directory, params=params)
 
 
-if __name__=="__main__":
-    parser = argparse.ArgumentParser(description='Parsing arguments')
-    parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
-    parser.add_argument('input', type=str, help='The path to the input file or directory')
-    parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
-    parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
-    args = parser.parse_args()
-    output_directory = args.output_directory
-    if args.all:
-        input_directory = args.input
-        solve_all(input_directory, output_directory, params=args.params)
-    else:
-        input_file = args.input
-        solve_from_file(input_file, output_directory, params=args.params)
+# if __name__=="__main__":
+#     parser = argparse.ArgumentParser(description='Parsing arguments')
+#     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
+#     parser.add_argument('input', type=str, help='The path to the input file or directory')
+#     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
+#     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
+#     args = parser.parse_args()
+#     output_directory = args.output_directory
+#     if args.all:
+#         input_directory = args.input
+#         solve_all(input_directory, output_directory, params=args.params)
+#     else:
+#         input_file = args.input
+#         solve_from_file(input_file, output_directory, params=args.params)
+solve_from_file("inputs/50.in", "outputstests/")
