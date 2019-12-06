@@ -72,6 +72,7 @@ def isValidEdge(u, v, inMST):
         return False
     return True
 
+# Prim algorithm source: Geeks for Geeks
 def primMST(cost):
     V = len(cost)
     res = []
@@ -106,7 +107,7 @@ def primMST(cost):
             res[b].append(a)
     return res
 
-clusters = {0: 0, 1:0, 2:0, 3:0}
-starting = 0
-distMatrix = [[0, 99, 15, 20], [99, 0, 25, 25], [15, 25, 0, 30], [20, 25, 30, 0]]
-print(tsp(starting, clusters, distMatrix))
+# clusters = {0: 0, 1:0, 2:0, 3:0}
+# starting = 0
+# distMatrix = [[0, 99, 15, 20], [99, 0, 25, 25], [15, 25, 0, 30], [20, 25, 30, 0]]
+# print(tsp(starting, clusters, distMatrix))
