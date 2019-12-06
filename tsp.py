@@ -2,7 +2,7 @@ import sys
 
 def tsp(starting, clusters, distMatrix):
     path = []
-    centroids = [x[0] for x in clusters]
+    centroids = [x for x in list(clusters.keys())]
     centroids.sort()
     # Check if starting point is in centroids
     if not starting in centroids:
@@ -106,7 +106,7 @@ def primMST(cost):
             res[b].append(a)
     return res
 
-clusters = [[0], [1], [2], [3]]
+clusters = {0: 0, 1:0, 2:0, 3:0}
 starting = 0
 distMatrix = [[0, 99, 15, 20], [99, 0, 25, 25], [15, 25, 0, 30], [20, 25, 30, 0]]
 print(tsp(starting, clusters, distMatrix))
