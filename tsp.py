@@ -5,8 +5,10 @@ def tsp(starting, clusters, distMatrix):
     centroids = [x for x in list(clusters.keys())]
     centroids.sort()
     # Check if starting point is in centroids
-    if not starting in centroids:
-        centroids.insert(0, starting)
+    if starting in centroids:
+        centroids.remove(starting)
+    centroids.insert(0, starting)
+
 
     # Create dictionary for index to centroids index
     centDict = {}
@@ -38,6 +40,7 @@ def tsp(starting, clusters, distMatrix):
         traversal[i] = centDict.get(traversal[i])
 
     return traversal
+
 
 def dfs(adj_lst):
 	visited = [False] * len(adj_lst)
@@ -107,7 +110,7 @@ def primMST(cost):
             res[b].append(a)
     return res
 
-# clusters = {0: 0, 1:0, 2:0, 3:0}
-# starting = 0
-# distMatrix = [[0, 99, 15, 20], [99, 0, 25, 25], [15, 25, 0, 30], [20, 25, 30, 0]]
-# print(tsp(starting, clusters, distMatrix))
+clusters = {0: 0, 1:0, 2:0, 3:0}
+starting = 1
+distMatrix = [[0, 99, 15, 20], [99, 0, 25, 25], [15, 25, 0, 30], [20, 25, 30, 0]]
+print(tsp(starting, clusters, distMatrix))
