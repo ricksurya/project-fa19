@@ -4,6 +4,7 @@ sys.path.append('..')
 sys.path.append('../..')
 import argparse
 import utils
+import math
 
 from student_utils import *
 from tsp import *
@@ -42,31 +43,47 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
 
     # Create clusters
     distanceMatrix, pathMatrix = shortestDistance(adjacency_matrix)
-    clusters = cluster(list(locationMap.keys()), homes, distanceMatrix)
 
-    # Once clusters created, do TSP
-    raw_pathway = tsp(startingIndex, clusters, distanceMatrix)
+    min_cost = math.inf
 
-    # The result from TSP is a raw pathway, @Melvin please change this into the real pathway
-    real_pathway = realPath(raw_pathway, pathMatrix)
-    dropOffs = dropOff(raw_pathway, real_pathway, clusters, homes[:], distanceMatrix)
-    # Once real pathway is done and we have the list of drop offs, map this back to the original name
-    # with locationMap
+    for k in range(2, len(distanceMatrix)//2):
+    	clusters = cluster(list(locationMap.keys()), homes, distanceMatrix, k)
+    	raw_pathway = tsp(startingIndex, clusters, distanceMatrix)
+    	real_pathway = realPath(raw_pathway, pathMatrix)
+    	dropOffs = smart_dropOff(real_pathway, homes, distanceMatrix)
 
-    # mapped_pathway = []
-    # for v in real_pathway:
-    # 	mapped_pathway.append(list_of_locations[v])
+    	c = cost(real_pathway, dropOffs, distanceMatrix)
+    	if c < min_cost:
+    		min_cost = c
+    		min_pathway = real_pathway
+    		min_dropOffs = dropOffs
 
-    # mapped_dropOffs = []
-    # for i in dropOffs:
-    # 	drop = []
-    # 	for j in i:
-    # 		drop.append(list_of_locations[j])
-    # 	mapped_dropOffs.append(drop)
+    print("Smart Cost : " + str(min_cost)) 
+    print("Naive Cost : " + str(naive_cost(startingIndex, homes, distanceMatrix)))
 
-    return real_path, dropOffs
+    return min_pathway, min_dropOffs
 
     # Write to output file
+
+def cost(real_pathway, dropOffs, distances):
+	curr = 0
+	total_cost = 0
+
+	for i in range(len(real_pathway)-1):
+		total_cost += (2 / 3) * distances[real_pathway[curr]][real_pathway[curr+1]]
+		curr += 1
+
+	for v in dropOffs:
+		for h in dropOffs[v]:
+			total_cost += distances[v][h]
+
+	return total_cost
+
+def naive_cost(source, homes, distances):
+	total_cost = 0
+	for h in homes:
+		total_cost += distances[source][h]
+	return total_cost
 
 def realPath(tsp_path, all_paths):
 	real_path = [tsp_path[0]]
@@ -78,32 +95,52 @@ def realPath(tsp_path, all_paths):
 # clusters: dictionary of key = centroid and value is homes in the cluster
 # homes:  set of homes
 # distances: Matrix containing the distances
+
+# dumb version
 def dropOff(tsp_path, real_path, clusters, homes, distances):
 	if tsp_path[0] in clusters:
-		centroids = tsp_path[:]
+		centroids = tsp_path[:-1]
 	else:
-		centroids = tsp_path[1:]
-	drop = {}
+		centroids = tsp_path[1:-1]
 
+	drop = {}
 	for v in real_path:
 		drop_location = []
-
-		if v in centroids:
+		if centroids and v == centroids[0]:
 			for h in clusters[v]:
 				if h in homes:
 					drop_location.append(h)
 					homes.remove(h)
-			centroids.pop()
-		else:
-			for h in homes:
-				if distances[v][h] < distances[centroids[0]][h]:
-					drop_location.append(h)
-					homes.remove(h)
+			centroids.pop(0)
 
 		if drop_location:
-				drop[v] = drop_location
+			drop[v] = drop_location
 
 	return drop
+
+# smart version
+def smart_dropOff(real_pathway, homes, distances):
+	drop = {}
+	toReturn = {}
+
+	for h in homes:
+		min_dist = math.inf
+		min_loc = -1
+		for v in real_pathway:
+			if distances[h][v] < min_dist:
+				min_dist = distances[h][v]
+				min_loc = v
+
+		if min_loc not in drop:
+			drop[min_loc] = [h]
+		else:
+			drop[min_loc].append(h)
+
+	for v in real_pathway:
+		if v in drop:
+			toReturn[v] = drop[v]
+
+	return toReturn
 
 def shortestDistance(matrix):
 	distances = []
@@ -340,3 +377,5 @@ def solve_all(input_directory, output_directory, params=[]):
 #         input_file = args.input
 #         solve_from_file(input_file, output_directory, params=args.params)
 solve_from_file("inputs/50.in", "outputstests/")
+solve_from_file("inputs/100.in", "outputstests/")
+solve_from_file("inputs/200.in", "outputstests/")
