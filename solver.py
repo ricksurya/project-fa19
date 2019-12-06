@@ -6,6 +6,7 @@ import argparse
 import utils
 
 from student_utils import *
+from tsp.py import *
 """
 ======================================================================
   Complete the following function.
@@ -25,7 +26,202 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         A dictionary mapping drop-off location to a list of homes of TAs that got off at that particular location
         NOTE: both outputs should be in terms of indices not the names of the locations themselves
     """
-    pass
+    # This will be the map for index name to real location name
+    locationMap = {}
+    # This is the index of the starting location
+    startingIndex = -1
+    # This is the list of homes as indexes
+    homes = []
+
+    for i in range len(list_of_locations):
+        locationMap[i] = list_of_locations[i]
+        if list_of_locations[i] == starting_car_location:
+            startingIndex = i
+        if list_of_locations[i] in list_of_homes:
+            homes.append(i)
+
+    # Create clusters
+    distanceMatrix, pathMatrix = shortestDistance(adjacency_matrix)
+    clusters = cluster(list(locationMap.keys()), homes, distanceMatrix)
+
+    # Once clusters created, do TSP
+    raw_pathway = tsp(startingIndex, clusters, distanceMatrix)
+
+    # The result from TSP is a raw pathway, @Melvin please change this into the real pathway
+
+    # Once real pathway is done and we have the list of drop offs, map this back to the original name
+    # with locationMap
+
+    # Write to output file
+def shortestDistance(matrix):
+	distances = []
+	paths = []
+
+	for u in range(len(matrix)):
+		dist_u_v = []
+		path_u_v = []
+		for v in range (len(matrix)):
+			if (u == v):
+				dist_u_v.append([0] * len(matrix))
+			else:
+				dist_u_v.append([float('inf')] * len(matrix))
+			path_u_v.append([])
+
+		distances.append(dist_u_v)
+		paths.append(path_u_v)
+
+	for u in range(len(matrix)):
+		for v in range(len(matrix)):
+			if u != v and matrix[u][v] != 'x':
+				distances[u][v][0] = matrix[u][v]
+				paths[u][v].append(v)
+
+	for k in range(1, len(matrix)):
+		for u in range(len(matrix)):
+			for v in range(len(matrix)):
+				uses_k = distances[u][k-1][k-1] + distances[k-1][v][k-1]
+				bypass_k = distances[u][v][k-1]
+
+				if (uses_k < bypass_k):
+					distances[u][v][k] = uses_k
+					paths[u][v] = paths[u][k-1] + paths[k-1][v]
+				else:
+					distances[u][v][k] = bypass_k
+
+	shortestDistance = []
+	for u in range(len(matrix)):
+		node = []
+		for v in range(len(matrix)):
+			node.append(min(distances[u][v]))
+		shortestDistance.append(node)
+
+	return shortestDistance, paths
+
+def cluster(list_locations, list_houses, shortestDistance, k_clusters = 7):
+	#shorestDistance is a matrix where each row i column j represents the shortest distance from node i to node j
+
+	#first choose k random locations and set them as centroid
+	centroids = np.random.choice(list_locations, size = k_clusters, replace = False)
+	iterations = 5
+	#dictionary on centroid, value is set of points in that cluster
+	clusters = {}
+	houses_set = set(list_houses)
+
+	for i in centroids:
+		clusters[i] = set()
+	#assigns each node to a centroid
+	for j in range(len(shortestDistance)):
+		closest_centroid_index = np.argmin([shortestDistance[j][c] for c in centroids])
+		clusters[centroids[closest_centroid_index]].add(j)
+
+	#print("*****FIRST********")
+	#for t in clusters.keys():
+	#	print("cluster", t)
+	#	for k in clusters[t]:
+	#		print("Node", k)
+	#	print()
+
+	#reassign centroids in each cluster iterations times
+	for itera in range(iterations):
+		new_centroids = []
+		for centroid_cluster in centroids:
+			possible_new_centroids = clusters[centroid_cluster]
+			homes_in_cluster = set()
+			for i in possible_new_centroids:
+				if (i in houses_set):
+					homes_in_cluster.add(i)
+			if len(homes_in_cluster) == 0:
+				new_centroids.append(centroid_cluster)
+				continue
+			else:
+				new_centroid = centroid_cluster
+				new_centroid_dist = averageDistanceToHomes(centroid_cluster, homes_in_cluster, shortestDistance)
+				for potential_centroid in possible_new_centroids:
+					potential_dist = averageDistanceToHomes(potential_centroid, homes_in_cluster, shortestDistance)
+					if (potential_dist < new_centroid_dist):
+						new_centroid = potential_centroid
+						new_centroid_dist = potential_dist
+				new_centroids.append(new_centroid)
+				#print(new_centroid_dist)
+
+		#print("old centroids:", centroids)
+		#print("new centroids:", new_centroids)
+		centroids = new_centroids[:]
+		clusters = {}
+
+		for i in centroids:
+			clusters[i] = set()
+
+		for j in range(len(shortestDistance)):
+			closest_centroid_index = np.argmin([shortestDistance[j][centroids[i]] for i in range(len(centroids))])
+			clusters[centroids[closest_centroid_index]].add(j)
+
+
+	#	print("*********", itera, "**********")
+	#	for t in clusters.keys():
+	#		print("cluster", t)
+	#		for k in clusters[t]:
+	#			print("Node", k)
+	#		print()
+
+
+
+
+	#for t in clusters.keys():
+	#	print("cluster", t)
+	#	for k in clusters[t]:
+	#		print("Node", k)
+	#	print()
+
+
+	#colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+	#plt.scatter(xVertices[list_houses], yVertices[list_houses], label= "stars", color= "blue", marker= "*", s=30)
+	#for n in range(len(centroids)):
+#		for a in clusters[centroids[n]]:#
+#			if a in houses_set:
+#				plt.scatter(xVertices[a], yVertices[a], label= "stars", color= colors[n], marker= ".", s=30)
+#			else:
+#				plt.scatter(xVertices[a], yVertices[a], label= "stars", color= colors[n], marker= "v", s=10)
+#			plt.scatter(xVertices[centroids[n]], yVertices[centroids[n]], label= "stars", color= colors[n], marker= "*", s=50)
+
+
+#	plt.show()
+	#print("-----------------------------------")
+	#for cent in clusters.keys():
+	#	print("Cluster with removed VX", cent)
+	#	for loc in list(clusters[cent]):
+#			if (loc not in houses_set):
+#				clusters[cent].remove(loc)
+#			else:
+#				print("Home Node:", loc)
+#		print()
+
+	#clusters is a dictionary of centroid: set(houses)
+
+	#returned = []
+	returned_clusters = {}
+	for cent in clusters.keys():
+		if len(clusters[cent]) > 0:
+			returned_clusters[cent] = clusters[cent]
+#			returned.append([cent, list(clusters[cent])])
+
+
+#	for i in returned:
+#		print(i[0], ": ", i[1])
+	#print(returned)
+	#print(returned_clusters)
+	return returned_clusters #second value is dictionary, centroid
+
+
+
+
+def averageDistanceToHomes(centroid, homes_in_cluster, shortestDistance):
+	if len(homes_in_cluster) == 0:
+		return 0
+	dists = shortestDistance[centroid]
+	sum_dist = sum([dists[home] for home in homes_in_cluster])
+	return sum_dist / len(homes_in_cluster)
+
 
 """
 ======================================================================
