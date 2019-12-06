@@ -83,7 +83,7 @@ def dropOff(tsp_path, real_path, clusters, homes, distances):
 		centroids = tsp_path[:]
 	else:
 		centroids = tsp_path[1:]
-	drop = []
+	drop = {}
 
 	for v in real_path:
 		drop_location = []
@@ -101,7 +101,7 @@ def dropOff(tsp_path, real_path, clusters, homes, distances):
 					homes.remove(h)
 
 		if drop_location:
-				drop.append([v] + drop_location)
+				drop[v] = drop_location
 
 	return drop
 
