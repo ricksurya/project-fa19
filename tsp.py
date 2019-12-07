@@ -1,4 +1,4 @@
-import sys
+import math
 
 def tsp(starting, clusters, distMatrix):
     path = []
@@ -21,7 +21,7 @@ def tsp(starting, clusters, distMatrix):
         tmp = []
         for j in range(len(centroids)):
             if i == j:
-                tmp.append(sys.maxsize)
+                tmp.append(math.inf)
             else:
                 tmp.append(distMatrix[centroids[i]][centroids[j]])
         mstMatrix.append(tmp)
@@ -90,13 +90,16 @@ def primMST(cost):
     # edges does not become V-1.
     edge_count = 0
     while edge_count < V - 1:
-
+        #print("V - 1 = " + str(V-1))
+        #print("edge count = " + str(edge_count))
         # Find minimum weight valid edge.
-        minn = sys.maxsize
+        minn = math.inf
         a = -1
         b = -1
         for i in range(V):
+            #print("i = " + str(i))
             for j in range(V):
+                #print("i = " + str(i) + " j = " + str(j) + " cost = " + str(cost[i][j]))
                 if cost[i][j] < minn:
                     if isValidEdge(i, j, inMST):
                         minn = cost[i][j]
