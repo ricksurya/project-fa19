@@ -7,6 +7,7 @@ import argparse
 import utils
 from student_utils import *
 import input_validator
+import os
 
 
 def validate_output(input_file, output_file, params=[]):
