@@ -1,5 +1,5 @@
 # project-fa19
-CS 170 Fall 2019 Project
+Shortest path solver
 
 ## Instructions
 To run the solver, use the following command:
